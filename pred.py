@@ -143,7 +143,10 @@ def seed_everything(seed):
 def load_model_and_tokenizer(path, model_name, device, torch_dtype=torch.float16):
     if "chatglm" in model_name or "internlm" in model_name or "xgen" in model_name or "qwen15" in model_name:
         tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
-        model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True, torch_dtype=torch_dtype).to(device)
+        if "int" in model_name:
+            model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True).to(device)
+        else:
+            model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True, torch_dtype=torch_dtype).to(device)
     elif "llama2" in model_name:
         replace_llama_attn_with_flash_attn()
         tokenizer = LlamaTokenizer.from_pretrained(path)
