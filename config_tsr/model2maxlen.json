@@ -1,7 +1,6 @@
 {
     "chatglm3-6b": 31500,
     "chatglm3-6b-32k": 31500,
-    "qwen15_14b_chat_int4_gptq": 31500,
     "qwen15_moe_chat": 31500,
     "qwen15_7b_chat": 31500,
     "qwen15_7b_chat_int8": 31500,

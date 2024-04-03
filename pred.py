@@ -15,9 +15,8 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default="chatglm3-6b", choices=["chatglm3-6b",
                                                                              "chatglm3-6b-32k",
-                                                                             "qwen15_14b_chat_int4_gptq",
                                                                              "qwen15_moe_chat",
-                                                                             "qwen15_7b_chat"])
+                                                                             "qwen15_7b_chat","qwen15_7b_chat_int8","qwen15_14b_chat_int4"])
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     return parser.parse_args(args)
 
