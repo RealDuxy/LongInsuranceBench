@@ -7,13 +7,13 @@ from tqdm import tqdm
 import numpy as np
 import random
 import argparse
-from llama_flash_attn_monkey_patch import replace_llama_attn_with_flash_attn
+# from llama_flash_attn_monkey_patch import replace_llama_attn_with_flash_attn
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default=None, choices=["llama2-7b-chat-4k", "longchat-v1.5-7b-32k", "xgen-7b-8k", "internlm-7b-8k", "chatglm2-6b", "chatglm2-6b-32k", "chatglm3-6b-32k", "vicuna-v1.5-7b-16k"])
+    parser.add_argument('--model', type=str, default="chatglm3-6b", choices=["chatglm3-6b", "chatglm3-6b-32k", "qwen15_14b_chat_int4_gptq", "qwen14_moe_chat"])
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     return parser.parse_args(args)
 
@@ -132,6 +132,7 @@ def load_model_and_tokenizer(path, model_name, device):
 if __name__ == '__main__':
     seed_everything(42)
     args = parse_args()
+    print(args)
     world_size = torch.cuda.device_count()
     mp.set_start_method('spawn', force=True)
 
@@ -142,12 +143,9 @@ if __name__ == '__main__':
     # define your model
     max_length = model2maxlen[model_name]
     if args.e:
-        datasets = ["qasper", "multifieldqa_en", "hotpotqa", "2wikimqa", "gov_report", "multi_news", \
-            "trec", "triviaqa", "samsum", "passage_count", "passage_retrieval_en", "lcc", "repobench-p"]
+        datasets = ["product_retrieval_summary", "product_retrieval_question", "product_count", "multi_product_qa", "deny_multi_product_qa", "repeat_product"]
     else:
-        datasets = ["narrativeqa", "qasper", "multifieldqa_en", "multifieldqa_zh", "hotpotqa", "2wikimqa", "musique", \
-                    "dureader", "gov_report", "qmsum", "multi_news", "vcsum", "trec", "triviaqa", "samsum", "lsht", \
-                    "passage_count", "passage_retrieval_en", "passage_retrieval_zh", "lcc", "repobench-p"]
+        datasets = ["product_retrieval_summary", "product_retrieval_question", "product_count", "multi_product_qa", "deny_multi_product_qa", "repeat_product"]
     # we design specific prompt format and max generation length for each task, feel free to modify them to optimize model output
     dataset2prompt = json.load(open("config/dataset2prompt.json", "r"))
     dataset2maxlen = json.load(open("config/dataset2maxlen.json", "r"))
@@ -156,17 +154,20 @@ if __name__ == '__main__':
         os.makedirs("pred")
     if not os.path.exists("pred_e"):
         os.makedirs("pred_e")
+
+    data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
         if args.e:
-            data = load_dataset('THUDM/LongBench', f"{dataset}_e", split='test')
+            data = load_dataset(data_script, f"{dataset}_e", split='test')
             if not os.path.exists(f"pred_e/{model_name}"):
                 os.makedirs(f"pred_e/{model_name}")
             out_path = f"pred_e/{model_name}/{dataset}.jsonl"
         else:
-            data = load_dataset('THUDM/LongBench', dataset, split='test')
+            data = load_dataset(data_script, dataset, split='test')
             if not os.path.exists(f"pred/{model_name}"):
                 os.makedirs(f"pred/{model_name}")
             out_path = f"pred/{model_name}/{dataset}.jsonl"
+
         prompt_format = dataset2prompt[dataset]
         max_gen = dataset2maxlen[dataset]
         data_all = [data_sample for data_sample in data]
