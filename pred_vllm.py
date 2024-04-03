@@ -171,7 +171,7 @@ if __name__ == '__main__':
         data_split = 1
         data_subsets = [data_all[i::data_split] for i in range(data_split)]
         sampling_params = SamplingParams(max_tokens=dataset2maxlen[dataset], use_beam_search=False, temperature=0.0)
-        model, tokenizer = load_tokenizer(model2path[model_name], model_name)
+        tokenizer = load_tokenizer(model2path[model_name], model_name)
         for json_obj in tqdm(data):
             prompt = build_input(tokenizer, **json_obj)
             output = model.generate(prompt, sampling_params)
