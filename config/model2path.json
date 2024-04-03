@@ -1,7 +1,6 @@
 {
     "chatglm3-6b": "/mnt/d/PycharmProjects/models/chatglm3-6b",
     "chatglm3-6b-32k": "/mnt/d/PycharmProjects/models/chatglm3-6b-32k",
-    "qwen15_14b_chat_int4_gptq": "",
     "qwen15_moe_chat": "/mnt/d/PycharmProjects/models/Qwen1.5-MoE-A2.7B-Chat",
     "qwen15_7b_chat": "/mnt/d/PycharmProjects/models/Qwen1.5-7B-Chat/"
 }
