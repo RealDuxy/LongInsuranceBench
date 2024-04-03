@@ -149,13 +149,14 @@ if __name__ == '__main__':
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
+        print(f"处理数据集：{dataset}")
         if args.e:
             data = load_dataset(data_script, f"{dataset}_e", split='test')
             if not os.path.exists(f"pred_e/{model_name}"):
                 os.makedirs(f"pred_e/{model_name}")
             out_path = f"pred_e/{model_name}/{dataset}.jsonl"
         else:
-            data = load_dataset(data_script, dataset, split='test[:4]')
+            data = load_dataset(data_script, dataset, split='test')
             if not os.path.exists(f"pred/{model_name}"):
                 os.makedirs(f"pred/{model_name}")
             out_path = f"pred/{model_name}/{dataset}.jsonl"
