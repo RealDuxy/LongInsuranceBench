@@ -174,7 +174,7 @@ if __name__ == '__main__':
         tokenizer = load_tokenizer(model2path[model_name], model_name)
         for json_obj in tqdm(data):
             prompt = build_input(tokenizer, **json_obj)
-            output = model.generate(prompt, sampling_params)
+            output = model.generate([prompt], sampling_params)
             pred = output[0].outputs[0].text
             if pred == '':
                 print(output)
