@@ -140,10 +140,12 @@ if __name__ == '__main__':
 
     if args.quantize:
         model = LLM(model=model2path[model_name],
-                    # , tensor_parallel_size=world_size,
-                    trust_remote_code=True, quantization="GPTQ")
+                    trust_remote_code=True,
+                    quantization="GPTQ",
+                    max_model_len=max_length)
     else:
-        model = LLM(model=model2path[model_name], tensor_parallel_size=world_size, trust_remote_code=True)
+        model = LLM(model=model2path[model_name], tensor_parallel_size=world_size, trust_remote_code=True,
+                    max_model_len=max_length)
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
