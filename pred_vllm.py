@@ -139,7 +139,9 @@ if __name__ == '__main__':
     # print(args.checkpoint)
 
     if args.quantize:
-        model = LLM(model=model2path[model_name], tensor_parallel_size=world_size, trust_remote_code=True, quantization="GPTQ")
+        model = LLM(model=model2path[model_name],
+                    # , tensor_parallel_size=world_size,
+                    trust_remote_code=True, quantization="GPTQ")
     else:
         model = LLM(model=model2path[model_name], tensor_parallel_size=world_size, trust_remote_code=True)
 
