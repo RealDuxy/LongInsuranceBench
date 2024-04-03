@@ -61,9 +61,21 @@ def post_process(response, model_name):
         response = response.strip().replace("Assistant:", "")
     elif "internlm" in model_name:
         response = response.split("<eoa>")[0]
-    return response
+    return response.strip()
 
 def get_pred(rank, world_size, data, max_length, max_gen, prompt_format, dataset, device, model_name, model2path, out_path):
+    def setup(rank, world_size):
+        os.environ['MASTER_ADDR'] = '127.0.0.1'
+        os.environ['MASTER_PORT'] = '29500'
+
+        dist.init_process_group(
+            backend='nccl',  # 使用NCCL作为后端，适用于NVIDIA GPUs
+            world_size=world_size,
+            rank=rank,
+        )
+
+    setup(rank, world_size)
+
     device = torch.device(f'cuda:{rank}')
     model, tokenizer = load_model_and_tokenizer(model2path[model_name], model_name, device)
     for json_obj in tqdm(data):
@@ -75,8 +87,15 @@ def get_pred(rank, world_size, data, max_length, max_gen, prompt_format, dataset
         # if "qwen15" in model_name:
         #     tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids
         if len(tokenized_prompt) > max_length:
+            print(f"当前数据大于{max_length}, 过长，需要进行截断")
+            print(f"prompt length: {len(prompt)}")
+            print(f"tokenized_prompt length: {len(tokenized_prompt)}")
             half = int(max_length/2)
             prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True)+tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
+            print(f"截断后：")
+            print(f"prompt length: {len(prompt)}")
+            tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids[0]
+            print(f"tokenized_prompt length: {len(tokenized_prompt)}")
 
         if dataset not in ["trec", "triviaqa", "samsum", "lsht", "lcc", "repobench-p"]: # chat models are better off without build prompts on these tasks
             prompt = build_chat(tokenizer, prompt, model_name)
@@ -163,10 +182,10 @@ if __name__ == '__main__':
     if args.e:
         datasets = ["product_retrieval_summary", "product_retrieval_question", "product_count", "multi_product_qa", "deny_multi_product_qa", "repeat_product"]
     else:
-        datasets = ["product_retrieval_summary", "product_retrieval_question", "product_count", "multi_product_qa", "deny_multi_product_qa", "repeat_product"]
+        datasets = ["deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count", "multi_product_qa", "repeat_product"]
     # we design specific prompt format and max generation length for each task, feel free to modify them to optimize model output
-    dataset2prompt = json.load(open("config/dataset2prompt.json", "r"))
-    dataset2maxlen = json.load(open("config/dataset2maxlen.json", "r"))
+    dataset2prompt = json.load(open("config_tsr/dataset2prompt.json", "r"))
+    dataset2maxlen = json.load(open("config_tsr/dataset2maxlen.json", "r"))
     # predict on each dataset
     if not os.path.exists("pred"):
         os.makedirs("pred")
@@ -182,7 +201,7 @@ if __name__ == '__main__':
                 os.makedirs(f"pred_e/{model_name}")
             out_path = f"pred_e/{model_name}/{dataset}.jsonl"
         else:
-            data = load_dataset(data_script, dataset, split='test[:10]')
+            data = load_dataset(data_script, dataset, split='test[:4]')
             if not os.path.exists(f"pred/{model_name}"):
                 os.makedirs(f"pred/{model_name}")
             out_path = f"pred/{model_name}/{dataset}.jsonl"
