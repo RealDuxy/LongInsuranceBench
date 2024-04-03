@@ -1,0 +1,8 @@
+{
+    "product_retrieval_summary":64,
+    "product_retrieval_question": 64,
+    "product_count": 64,
+    "multi_product_qa": 1024,
+    "deny_multi_product_qa": 1024,
+    "repeat_product": 16000
+}

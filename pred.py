@@ -13,7 +13,11 @@ import torch.multiprocessing as mp
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default="chatglm3-6b", choices=["chatglm3-6b", "chatglm3-6b-32k", "qwen15_14b_chat_int4_gptq", "qwen14_moe_chat"])
+    parser.add_argument('--model', type=str, default="chatglm3-6b", choices=["chatglm3-6b",
+                                                                             "chatglm3-6b-32k",
+                                                                             "qwen15_14b_chat_int4_gptq",
+                                                                             "qwen15_moe_chat",
+                                                                             "qwen15_7b_chat"])
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     return parser.parse_args(args)
 
@@ -39,6 +43,17 @@ def build_chat(tokenizer, prompt, model_name):
         prompt = header + f" ### Human: {prompt}\n###"
     elif "internlm" in model_name:
         prompt = f"<|User|>:{prompt}<eoh>\n<|Bot|>:"
+    elif "qwen15" in model_name:
+        messages = [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ]
+        prompt = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True
+        )
+
     return prompt
 
 def post_process(response, model_name):
@@ -57,9 +72,12 @@ def get_pred(rank, world_size, data, max_length, max_gen, prompt_format, dataset
         tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt").input_ids[0]
         if "chatglm3" in model_name:
             tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids[0]
+        # if "qwen15" in model_name:
+        #     tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids
         if len(tokenized_prompt) > max_length:
             half = int(max_length/2)
             prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True)+tokenizer.decode(tokenized_prompt[-half:], skip_special_tokens=True)
+
         if dataset not in ["trec", "triviaqa", "samsum", "lsht", "lcc", "repobench-p"]: # chat models are better off without build prompts on these tasks
             prompt = build_chat(tokenizer, prompt, model_name)
         if "chatglm3" in model_name:
@@ -104,10 +122,10 @@ def seed_everything(seed):
     torch.backends.cudnn.deterministic = True
     torch.cuda.manual_seed_all(seed)
 
-def load_model_and_tokenizer(path, model_name, device):
-    if "chatglm" in model_name or "internlm" in model_name or "xgen" in model_name:
+def load_model_and_tokenizer(path, model_name, device, torch_dtype=torch.float16):
+    if "chatglm" in model_name or "internlm" in model_name or "xgen" in model_name or "qwen15" in model_name:
         tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
-        model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True, torch_dtype=torch.bfloat16).to(device)
+        model = AutoModelForCausalLM.from_pretrained(path, trust_remote_code=True, torch_dtype=torch_dtype).to(device)
     elif "llama2" in model_name:
         replace_llama_attn_with_flash_attn()
         tokenizer = LlamaTokenizer.from_pretrained(path)
@@ -136,8 +154,8 @@ if __name__ == '__main__':
     world_size = torch.cuda.device_count()
     mp.set_start_method('spawn', force=True)
 
-    model2path = json.load(open("config/model2path.json", "r"))
-    model2maxlen = json.load(open("config/model2maxlen.json", "r"))
+    model2path = json.load(open("config_tsr/model2path.json", "r"))
+    model2maxlen = json.load(open("config_tsr/model2maxlen.json", "r"))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model_name = args.model
     # define your model
@@ -157,21 +175,28 @@ if __name__ == '__main__':
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
+        print(f"处理数据集：{dataset}")
         if args.e:
             data = load_dataset(data_script, f"{dataset}_e", split='test')
             if not os.path.exists(f"pred_e/{model_name}"):
                 os.makedirs(f"pred_e/{model_name}")
             out_path = f"pred_e/{model_name}/{dataset}.jsonl"
         else:
-            data = load_dataset(data_script, dataset, split='test')
+            data = load_dataset(data_script, dataset, split='test[:10]')
             if not os.path.exists(f"pred/{model_name}"):
                 os.makedirs(f"pred/{model_name}")
             out_path = f"pred/{model_name}/{dataset}.jsonl"
 
         prompt_format = dataset2prompt[dataset]
         max_gen = dataset2maxlen[dataset]
+
         data_all = [data_sample for data_sample in data]
         data_subsets = [data_all[i::world_size] for i in range(world_size)]
+
+        # if world_size == 1:
+        #     get_pred(0, world_size, data_subsets[0], max_length, \
+        #                 max_gen, prompt_format, dataset, device, model_name, model2path, out_path)
+        # else:
         processes = []
         for rank in range(world_size):
             p = mp.Process(target=get_pred, args=(rank, world_size, data_subsets[rank], max_length, \
