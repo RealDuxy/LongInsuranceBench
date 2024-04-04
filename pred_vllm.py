@@ -160,12 +160,14 @@ if __name__ == '__main__':
         model = LLM(model=model2path[model_name],
                     trust_remote_code=True,
                     quantization="GPTQ",
-                    max_model_len=max_length)
+                    max_model_len=max_length,
+                    dtype = "float16")
     else:
         model = LLM(model=model2path[model_name],
                     tensor_parallel_size=world_size,
                     trust_remote_code=True,
-                    max_model_len=max_length)
+                    max_model_len=max_length,
+                    dtype = "float16")
 
         # model = None
 
