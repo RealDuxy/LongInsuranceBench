@@ -215,14 +215,20 @@ if __name__ == '__main__':
         tokenizer = load_tokenizer(model2path[model_name], model_name)
         for json_obj in tqdm(data):
             prompt = build_input(tokenizer, **json_obj)
+            if len(prompt[0]) < 6000:
+                continue
+            print(f"input prompt length: {len(prompt[0])}")
+            print(f"input token length: {len(tokenizer(prompt).input_ids[0])}")
+
+
+
             output = model.generate(prompt, sampling_params)
             pred = output[0].outputs[0].text
             if pred == '':
                 print(output)
             pred = post_process(pred, model_name)
 
-            print(f"input prompt length: {len(prompt[0])}")
-            print(f"input token length: {len(tokenizer(prompt).input_ids[0])}")
+
 
             print(f"output prompt length: {len(pred)}")
             print(f"output token: {len(tokenizer(pred).input_ids)}")
