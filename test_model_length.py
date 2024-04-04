@@ -219,8 +219,8 @@ if __name__ == '__main__':
 
             print(f"input token: {len(tokenizer(prompt).input_ids)}")
             print(f"output token: {len(tokenizer(pred).input_ids)}")
-            with open(out_path, "a", encoding="utf-8") as f:
-                json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"],
-                           "length": json_obj["length"]}, f, ensure_ascii=False)
-                f.write('\n')
+            # with open(out_path, "a", encoding="utf-8") as f:
+            #     json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"],
+            #                "length": json_obj["length"]}, f, ensure_ascii=False)
+            #     f.write('\n')
             # get_pred(0,1,data_all,max_length,max_gen,prompt_format,dataset,device,model_name,model2path,out_path)
