@@ -18,6 +18,7 @@ def parse_args(args=None):
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     parser.add_argument('--s', help='model size in B')
     parser.add_argument('--debug', action='store_true', help="Debug mode")
+    parser.add_argument('--max_samples', type=int, required=False)
     # parser.add_argument('--checkpoint', type=str, help="checkpoint_path")
     parser.add_argument('--quantize', action='store_true', help="Debug mode")
 
@@ -62,11 +63,12 @@ def build_input(tokenizer, **kwargs):
             0]
     # if "qwen15" in model_name:
     #     tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids
-    if len(tokenized_prompt) > max_length:
+
+    if len(tokenized_prompt) > max_source_length:
         print(f"当前数据大于{max_length}, 过长，需要进行截断")
         print(f"prompt length: {len(prompt)}")
         print(f"tokenized_prompt length: {len(tokenized_prompt)}")
-        half = int(max_length / 2)
+        half = int(max_source_length / 2) - 2
         prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True) + tokenizer.decode(
             tokenized_prompt[-half:], skip_special_tokens=True)
         print(f"截断后：")
@@ -75,18 +77,23 @@ def build_input(tokenizer, **kwargs):
             0]
         print(f"tokenized_prompt length: {len(tokenized_prompt)}")
 
-    if dataset not in ["trec", "triviaqa", "samsum", "lsht", "lcc",
-                       "repobench-p"]:  # chat models are better off without build prompts on these tasks
-        prompt = build_chat(tokenizer, prompt, model_name)
-    if "chatglm3" in model_name:
-        if dataset in ["trec", "triviaqa", "samsum", "lsht", "lcc", "repobench-p"]:
-            input = tokenizer(prompt, truncation=False, return_tensors="pt").to(device)
-        else:
-            input = prompt.to(device)
-    else:
-        input = tokenizer(prompt, truncation=False, return_tensors="pt").to(device)
-    context_length = input.input_ids.shape[-1]
-    return input, context_length
+    # prompt = build_chat(tokenizer, prompt, model_name)
+
+    # if dataset not in ["trec", "triviaqa", "samsum", "lsht", "lcc",
+    #                    "repobench-p"]:  # chat models are better off without build prompts on these tasks
+    #     prompt = build_chat(tokenizer, prompt, model_name)
+    # if "chatglm3" in model_name:
+    #     if dataset in ["trec", "triviaqa", "samsum", "lsht", "lcc", "repobench-p"]:
+    #         input = tokenizer(prompt, truncation=False, return_tensors="pt").to(device)
+    #     else:
+    #         input = prompt.to(device)
+    # else:
+    #     input = tokenizer(prompt, truncation=False, return_tensors="pt").to(device)
+
+    # context_length = input.input_ids.shape[-1]
+
+    # prompt = tokenizer.batch_decode(prompt.input_ids, skip_special_tokens=True)
+    return [prompt]
 
 def post_process(response, model_name):
     if "xgen" in model_name:
@@ -116,21 +123,32 @@ if __name__ == '__main__':
     world_size = torch.cuda.device_count()
     mp.set_start_method('spawn', force=True)
 
-    model2path = json.load(open("config_tsr/model2path.json", "r"))
-    model2maxlen = json.load(open("config_tsr/model2maxlen.json", "r"))
+    if args.debug:
+        config_dir = "config"
+    else:
+        config_dir = "config_tsr"
+
+    if args.max_samples:
+        test_split = f"test[:{args.max_samples}]"
+    else:
+        test_split = "test"
+
+    model2path = json.load(open(f"{config_dir}/model2path.json", "r"))
+    model2maxlen = json.load(open(f"{config_dir}/model2maxlen.json", "r"))
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model_name = args.model
     # define your model
     max_length = model2maxlen[model_name]
     if args.e:
-        datasets = ["product_retrieval_summary", "product_retrieval_question", "product_count", "multi_product_qa",
-                    "deny_multi_product_qa", "repeat_product"]
-    else:
         datasets = ["deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa", "repeat_product"]
+    else:
+        datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
+                    "multi_product_qa"]
+        # datasets = ["repeat_product"]
     # we design specific prompt format and max generation length for each task, feel free to modify them to optimize model output
-    dataset2prompt = json.load(open("config_tsr/dataset2prompt.json", "r"))
-    dataset2maxlen = json.load(open("config_tsr/dataset2maxlen.json", "r"))
+    dataset2prompt = json.load(open(f"{config_dir}/dataset2prompt.json", "r"))
+    dataset2maxlen = json.load(open(f"{config_dir}/dataset2maxlen.json", "r"))
     # predict on each dataset
     if not os.path.exists("pred"):
         os.makedirs("pred")
@@ -144,19 +162,23 @@ if __name__ == '__main__':
                     quantization="GPTQ",
                     max_model_len=max_length)
     else:
-        model = LLM(model=model2path[model_name], tensor_parallel_size=world_size, trust_remote_code=True,
+        model = LLM(model=model2path[model_name],
+                    tensor_parallel_size=world_size,
+                    trust_remote_code=True,
                     max_model_len=max_length)
+
+        # model = None
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
         print(f"处理数据集：{dataset}")
         if args.e:
-            data = load_dataset(data_script, f"{dataset}_e", split='test')
+            data = load_dataset(data_script, f"{dataset}_e", split=test_split)
             if not os.path.exists(f"pred_e/{model_name}"):
                 os.makedirs(f"pred_e/{model_name}")
             out_path = f"pred_e/{model_name}/{dataset}.jsonl"
         else:
-            data = load_dataset(data_script, dataset, split='test')
+            data = load_dataset(data_script, dataset, split=test_split)
             if not os.path.exists(f"pred/{model_name}"):
                 os.makedirs(f"pred/{model_name}")
             out_path = f"pred/{model_name}/{dataset}.jsonl"
@@ -166,16 +188,19 @@ if __name__ == '__main__':
 
         print(f"word_size: {world_size}")
 
-        if args.debug:
-            world_size = 1
+
 
         data_split = 1
         data_subsets = [data_all[i::data_split] for i in range(data_split)]
-        sampling_params = SamplingParams(max_tokens=dataset2maxlen[dataset], use_beam_search=False, temperature=0.0)
+        max_new_tokens = max(min(dataset2maxlen[dataset], max_length), 64)
+        print(f"max_new_tokens: {max_new_tokens}")
+        max_source_length = max(max_length - max_new_tokens, max_length-64)
+        print(f"max_source_length: {max_source_length}")
+        sampling_params = SamplingParams(max_tokens=max_new_tokens, use_beam_search=False, temperature=0.0)
         tokenizer = load_tokenizer(model2path[model_name], model_name)
         for json_obj in tqdm(data):
-            prompt,_ = build_input(tokenizer, **json_obj)
-            output = model.generate([prompt], sampling_params)
+            prompt = build_input(tokenizer, **json_obj)
+            output = model.generate(prompt, sampling_params)
             pred = output[0].outputs[0].text
             if pred == '':
                 print(output)
