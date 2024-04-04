@@ -1,5 +1,5 @@
 {
-    "chatglm3-6b": 8000,
+    "chatglm3-6b": 7000,
     "chatglm3-6b-32k": 16000,
     "qwen15_moe_chat": 16000,
     "qwen15_7b_chat": 16000,
