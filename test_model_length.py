@@ -222,7 +222,7 @@ if __name__ == '__main__':
 
             output = model.generate(prompt, sampling_params)
             pred = output[0].outputs[0].text
-            print(pred)
+            print(f"{pred[:100]}\n......\n{pred[-100:]}")
             pred = post_process(pred, model_name)
 
             print(f"output prompt length: {len(pred)}")
