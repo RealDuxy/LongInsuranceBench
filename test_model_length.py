@@ -23,6 +23,7 @@ def parse_args(args=None):
     parser.add_argument('--quantize', action='store_true', help="Debug mode")
     parser.add_argument('--dataset',type=str, default="repeat_product")
     parser.add_argument('--max_length',type=int, required=False)
+    parser.add_argument('--threshold', type=int, required=True)
     return parser.parse_args(args)
 
 def load_tokenizer(path, model_name):
@@ -215,7 +216,7 @@ if __name__ == '__main__':
         tokenizer = load_tokenizer(model2path[model_name], model_name)
         for json_obj in tqdm(data):
             prompt = build_input(tokenizer, **json_obj)
-            if len(prompt[0]) < 6000:
+            if len(prompt[0]) < args.threshold:
                 continue
             print(f"input prompt length: {len(prompt[0])}")
             print(f"input token length: {len(tokenizer(prompt).input_ids[0])}")
