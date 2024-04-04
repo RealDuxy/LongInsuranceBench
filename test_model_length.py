@@ -217,7 +217,7 @@ if __name__ == '__main__':
                 print(output)
             pred = post_process(pred, model_name)
 
-            print(f"input token: {len(tokenizer(prompt).input_ids)}")
+            print(f"input token: {len(tokenizer(prompt).input_ids[0])}")
             print(f"output token: {len(tokenizer(pred).input_ids)}")
             # with open(out_path, "a", encoding="utf-8") as f:
             #     json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"],
