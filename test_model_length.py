@@ -212,7 +212,7 @@ if __name__ == '__main__':
         print(f"max_new_tokens: {max_new_tokens}")
         max_source_length = max(max_length - max_new_tokens, max_length-64)
         print(f"max_source_length: {max_source_length}")
-        sampling_params = SamplingParams(min_tokens=1, max_tokens=max_new_tokens, use_beam_search=False, temperature=0.0)
+        sampling_params = SamplingParams(max_tokens=max_new_tokens, use_beam_search=False, temperature=0.0)
         tokenizer = load_tokenizer(model2path[model_name], model_name)
         for json_obj in tqdm(data):
             prompt = build_input(tokenizer, **json_obj)
