@@ -21,6 +21,7 @@ def parse_args(args=None):
     parser.add_argument('--max_samples', type=int, required=False)
     # parser.add_argument('--checkpoint', type=str, help="checkpoint_path")
     parser.add_argument('--quantize', action='store_true', help="Debug mode")
+    parser.add_argument('--dataset',type=str, required=False)
 
     return parser.parse_args(args)
 
@@ -139,11 +140,20 @@ if __name__ == '__main__':
     model_name = args.model
     # define your model
     max_length = model2maxlen[model_name]
-    if args.e:
-        datasets = ["deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
+
+    dataset_list = ["deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa", "repeat_product"]
+    if args.e:
+        if args.dataset and args.dataset in dataset_list:
+            datasets = [args.dataset]
+        else:
+            datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
+                    "multi_product_qa"]
     else:
-        datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
+        if args.dataset and args.dataset in dataset_list:
+            datasets = [args.dataset]
+        else:
+            datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa"]
         # datasets = ["repeat_product"]
     # we design specific prompt format and max generation length for each task, feel free to modify them to optimize model output
