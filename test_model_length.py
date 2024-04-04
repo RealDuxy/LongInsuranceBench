@@ -27,14 +27,13 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 def load_tokenizer(path, model_name):
-    if "chatglm" in model_name or "internlm" in model_name or "xgen" in model_name or "qwen15" in model_name:
-        tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
     return tokenizer
 
 
 # This is the customized building prompt for chat models
 def build_chat(tokenizer, prompt, model_name):
-    if "chatglm3" in model_name:
+    if "chatglm3" in model_name or "longalign" in model_name:
         prompt = tokenizer.build_chat_input(prompt)
     elif "chatglm" in model_name:
         prompt = tokenizer.build_prompt(prompt)
@@ -60,7 +59,7 @@ def build_input(tokenizer, **kwargs):
     prompt = prompt_format.format(**kwargs)
     # truncate to fit max_length (we suggest truncate in the middle, since the left and right side may contain crucial instructions)
     tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt").input_ids[0]
-    if "chatglm3" in model_name:
+    if "chatglm3" in model_name or "longalign" in model_name:
         tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids[
             0]
     # if "qwen15" in model_name:
@@ -221,15 +220,10 @@ if __name__ == '__main__':
             print(f"input prompt length: {len(prompt[0])}")
             print(f"input token length: {len(tokenizer(prompt).input_ids[0])}")
 
-
-
             output = model.generate(prompt, sampling_params)
             pred = output[0].outputs[0].text
-            if pred == '':
-                print(output)
+            print(pred)
             pred = post_process(pred, model_name)
-
-
 
             print(f"output prompt length: {len(pred)}")
             print(f"output token: {len(tokenizer(pred).input_ids)}")
