@@ -22,6 +22,7 @@ def parse_args(args=None):
     # parser.add_argument('--checkpoint', type=str, help="checkpoint_path")
     parser.add_argument('--quantize', action='store_true', help="Debug mode")
     parser.add_argument('--dataset',type=str, default="repeat_product")
+    parser.add_argument('--max_length',type=int, required=False)
     return parser.parse_args(args)
 
 def load_tokenizer(path, model_name):
@@ -138,7 +139,10 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model_name = args.model
     # define your model
-    max_length = model2maxlen[model_name]
+    if args.max_length:
+        max_length = args.max_length
+    else:
+        max_length = model2maxlen[model_name]
 
     dataset_list = ["deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa", "repeat_product"]
