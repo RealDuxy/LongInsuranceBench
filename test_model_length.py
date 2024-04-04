@@ -21,7 +21,7 @@ def parse_args(args=None):
     parser.add_argument('--max_samples', type=int, required=False)
     # parser.add_argument('--checkpoint', type=str, help="checkpoint_path")
     parser.add_argument('--quantize', action='store_true', help="Debug mode")
-    parser.add_argument('--dataset',type=str, default="repeat_product")
+    parser.add_argument('--dataset',type=str,  required=False)
     parser.add_argument('--max_length',type=int, required=False)
     parser.add_argument('--threshold', type=int, required=True)
     return parser.parse_args(args)
