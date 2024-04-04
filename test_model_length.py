@@ -222,7 +222,7 @@ if __name__ == '__main__':
             pred = post_process(pred, model_name)
 
             print(f"input prompt length: {len(prompt[0])}")
-            print(f"input token length: {len(tokenizer(prompt).input_ids)}")
+            print(f"input token length: {len(tokenizer(prompt).input_ids[0])}")
 
             print(f"output prompt length: {len(pred)}")
             print(f"output token: {len(tokenizer(pred).input_ids)}")
