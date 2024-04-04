@@ -65,17 +65,16 @@ def build_input(tokenizer, **kwargs):
     #     tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids
 
     if len(tokenized_prompt) > max_source_length:
-        print(f"当前数据大于{max_length}, 过长，需要进行截断")
-        print(f"prompt length: {len(prompt)}")
-        print(f"tokenized_prompt length: {len(tokenized_prompt)}")
+        # print(f"当前数据大于{max_length}, 过长，需要进行截断")
+        # print(f"prompt length: {len(prompt)}")
+        # print(f"tokenized_prompt length: {len(tokenized_prompt)}")
         half = int(max_source_length / 2) - 2
         prompt = tokenizer.decode(tokenized_prompt[:half], skip_special_tokens=True) + tokenizer.decode(
             tokenized_prompt[-half:], skip_special_tokens=True)
-        print(f"截断后：")
-        print(f"prompt length: {len(prompt)}")
-        tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids[
-            0]
-        print(f"tokenized_prompt length: {len(tokenized_prompt)}")
+        # print(f"截断后：")
+        # print(f"prompt length: {len(prompt)}")
+        # tokenized_prompt = tokenizer(prompt, truncation=False, return_tensors="pt", add_special_tokens=False).input_ids[0]
+        # print(f"tokenized_prompt length: {len(tokenized_prompt)}")
 
     # prompt = build_chat(tokenizer, prompt, model_name)
 
