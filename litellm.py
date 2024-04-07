@@ -30,7 +30,7 @@ class LLM:
         prefix_token_ids = kwargs.get("prefix_token_ids", [])
 
         input_data = {
-            "prompt": prompt,
+            "query": prompt,
             "history": history,
             "request_id": record_id,
             "gen_kwarg": {
