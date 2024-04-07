@@ -2,6 +2,7 @@ import os
 import json
 import argparse
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 from metrics import (
@@ -55,7 +56,7 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 def scorer_e(dataset, predictions, answers, lengths, all_classes):
-    scores = {"0-4k": [], "4-8k": [], "8k-12k": [], "12k-16k": []}
+    scores = {"0-4k": [], "4-8k": [], "8k-12k": [], "12k-16k": [], "overall": []}
     for (prediction, ground_truths, length) in tqdm(zip(predictions, answers, lengths)):
         score = 0.
         # if dataset in ["trec", "triviaqa", "samsum", "lsht"]:
@@ -70,6 +71,7 @@ def scorer_e(dataset, predictions, answers, lengths, all_classes):
             scores["8k-12k"].append(score)
         else:
             scores["12k-16k"].append(score)
+        scores["overall"].append(score)
     for key in scores.keys():
         scores[key] = round(100 * np.mean(scores[key]), 2)
     return scores
@@ -120,3 +122,5 @@ if __name__ == '__main__':
         out_path = f"pred/{args.model}/result.json"
     with open(out_path, "w") as f:
         json.dump(scores, f, ensure_ascii=False, indent=4)
+
+    pd.DataFrame(scores).to_excel(f"pred/{args.model}/result.xlsx")

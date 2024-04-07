@@ -15,7 +15,7 @@ from litellm import LLM
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default="qwen15_14b_chat_int4", )
+    parser.add_argument('--model', type=str, default="chatglm3-6b", )
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     parser.add_argument('--s', help='model size in B')
     parser.add_argument('--debug', action='store_true', help="Debug mode")
