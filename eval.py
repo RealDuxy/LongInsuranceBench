@@ -2,6 +2,7 @@ import os
 import json
 import argparse
 import numpy as np
+from tqdm import tqdm
 
 from metrics import (
     qa_f1_score,
@@ -12,7 +13,8 @@ from metrics import (
     retrieval_score,
     retrieval_zh_score,
     count_score,
-    code_sim_score,
+    # code_sim_score,
+    retrieval_product_zh_score, count_product_score,
 )
 
 dataset2metric = {
@@ -35,30 +37,39 @@ dataset2metric = {
     "passage_retrieval_en": retrieval_score,
     "passage_count": count_score,
     "passage_retrieval_zh": retrieval_zh_score,
-    "lcc": code_sim_score,
-    "repobench-p": code_sim_score,
+    # "lcc": code_sim_score,
+    # "repobench-p": code_sim_score,
+
+    "product_count": count_product_score,
+    "product_retrieval_summary": retrieval_product_zh_score,
+    "product_retrieval_question": retrieval_product_zh_score,
+    "deny_multi_product_qa": rouge_zh_score,
+    "multi_product_qa": rouge_zh_score,
+    "repeat_product": rouge_zh_score
 }
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default=None)
+    parser.add_argument('--model', type=str, default="qwen15_14b_chat_int4")
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     return parser.parse_args(args)
 
 def scorer_e(dataset, predictions, answers, lengths, all_classes):
-    scores = {"0-4k": [], "4-8k": [], "8k+": []}
-    for (prediction, ground_truths, length) in zip(predictions, answers, lengths):
+    scores = {"0-4k": [], "4-8k": [], "8k-12k": [], "12k-16k": []}
+    for (prediction, ground_truths, length) in tqdm(zip(predictions, answers, lengths)):
         score = 0.
-        if dataset in ["trec", "triviaqa", "samsum", "lsht"]:
-            prediction = prediction.lstrip('\n').split('\n')[0]
+        # if dataset in ["trec", "triviaqa", "samsum", "lsht"]:
+        #     prediction = prediction.lstrip('\n').split('\n')[0]
         for ground_truth in ground_truths:
             score = max(score, dataset2metric[dataset](prediction, ground_truth, all_classes=all_classes))
         if length < 4000:
             scores["0-4k"].append(score)
         elif length < 8000:
             scores["4-8k"].append(score)
+        elif length < 12000:
+            scores["8k-12k"].append(score)
         else:
-            scores["8k+"].append(score)
+            scores["12k-16k"].append(score)
     for key in scores.keys():
         scores[key] = round(100 * np.mean(scores[key]), 2)
     return scores
@@ -84,6 +95,7 @@ if __name__ == '__main__':
     all_files = os.listdir(path)
     print("Evaluating on:", all_files)
     for filename in all_files:
+        print(f"evaluating {filename}")
         if not filename.endswith("jsonl"):
             continue
         predictions, answers, lengths = [], [], []
@@ -96,10 +108,11 @@ if __name__ == '__main__':
                 all_classes = data["all_classes"]
                 if "length" in data:
                     lengths.append(data["length"])
-        if args.e:
-            score = scorer_e(dataset, predictions, answers, lengths, all_classes)
-        else:
-            score = scorer(dataset, predictions, answers, all_classes)
+        # if args.e:
+        #     score = scorer_e(dataset, predictions, answers, lengths, all_classes)
+        # else:
+        #     score = scorer(dataset, predictions, answers, all_classes)
+        score = scorer_e(dataset, predictions, answers, lengths, all_classes)
         scores[dataset] = score
     if args.e:
         out_path = f"pred_e/{args.model}/result.json"

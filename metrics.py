@@ -2,7 +2,7 @@ import re
 import string
 
 import jieba
-from fuzzywuzzy import fuzz
+# from fuzzywuzzy import fuzz
 import difflib
 
 from typing import List
@@ -53,6 +53,15 @@ def count_score(prediction, ground_truth, **kwargs):
     final_score = 0.0 if len(numbers) == 0 else right_num / len(numbers)
     return float(final_score)
 
+def count_product_score(prediction, ground_truth, **kwargs):
+    numbers = re.findall(r"\d+", prediction)
+    right_num = 0
+    for number in numbers:
+        if str(number) == str(ground_truth):
+            right_num += 1
+    final_score = 0.0 if len(numbers) == 0 else right_num / len(numbers)
+    return float(final_score)
+
 def retrieval_score(prediction, ground_truth, **kwargs):
     pattern = r'Paragraph (\d+)'
     matches = re.findall(pattern, ground_truth)
@@ -77,14 +86,21 @@ def retrieval_zh_score(prediction, ground_truth, **kwargs):
     final_score = 0.0 if len(numbers) == 0 else right_num / len(numbers)
     return float(final_score)
 
-def code_sim_score(prediction, ground_truth, **kwargs):
-    all_lines = prediction.lstrip('\n').split('\n')
-    prediction = ""
-    for line in all_lines:
-        if ('`' not in line) and ('#' not in line) and ('//' not in line):
-            prediction = line
-            break
-    return (fuzz.ratio(prediction, ground_truth) / 100)
+def retrieval_product_zh_score(prediction, ground_truth, **kwargs):
+    score = 0
+    if ground_truth in prediction:
+        score += 1
+    return score
+
+
+# def code_sim_score(prediction, ground_truth, **kwargs):
+#     all_lines = prediction.lstrip('\n').split('\n')
+#     prediction = ""
+#     for line in all_lines:
+#         if ('`' not in line) and ('#' not in line) and ('//' not in line):
+#             prediction = line
+#             break
+#     return (fuzz.ratio(prediction, ground_truth) / 100)
 
 def classification_score(prediction, ground_truth, **kwargs):
     em_match_list = []

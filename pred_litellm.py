@@ -9,12 +9,13 @@ import argparse
 import torch.distributed as dist
 import torch.multiprocessing as mp
 from transformers import AutoTokenizer
-from vllm import LLM, SamplingParams
+
+from litellm import LLM
 
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default="qwen15_7b_chat", )
+    parser.add_argument('--model', type=str, default="qwen15_14b_chat_int4", )
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     parser.add_argument('--s', help='model size in B')
     parser.add_argument('--debug', action='store_true', help="Debug mode")
@@ -158,38 +159,25 @@ if __name__ == '__main__':
     dataset2prompt = json.load(open(f"{config_dir}/dataset2prompt.json", "r"))
     dataset2maxlen = json.load(open(f"{config_dir}/dataset2maxlen.json", "r"))
     # predict on each dataset
-    if not os.path.exists("pred"):
-        os.makedirs("pred")
-    if not os.path.exists("pred_e"):
-        os.makedirs("pred_e")
-    # print(args.checkpoint)
+    if not os.path.exists("pred_litellm"):
+        os.makedirs("pred_litellm")
 
-    if args.quantize:
-        model = LLM(model=model2path[model_name],
-                    trust_remote_code=True,
-                    quantization="GPTQ",
-                    max_model_len=max_length,
-                    dtype="float16")
-    else:
-        model = LLM(model=model2path[model_name],
-                    tensor_parallel_size=world_size,
-                    trust_remote_code=True,
-                    max_model_len=max_length,
-                    dtype = "float16")
+    model = LLM()
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
         print(f"处理数据集：{dataset}")
         if args.e:
             data = load_dataset(data_script, f"{dataset}_e", split=test_split)
-            if not os.path.exists(f"pred_e/{model_name}"):
-                os.makedirs(f"pred_e/{model_name}")
-            out_path = f"pred_e/{model_name}/{dataset}.jsonl"
+            if not os.path.exists(f"pred_litellm_e/{model_name}"):
+                os.makedirs(f"pred_litellm_e/{model_name}")
+            out_path = f"pred_litellm_e/{model_name}/{dataset}.jsonl"
         else:
             data = load_dataset(data_script, dataset, split=test_split)
-            if not os.path.exists(f"pred/{model_name}"):
-                os.makedirs(f"pred/{model_name}")
-            out_path = f"pred/{model_name}/{dataset}.jsonl"
+            if not os.path.exists(f"pred_litellm/{model_name}"):
+                os.makedirs(f"pred_litellm/{model_name}")
+            out_path = f"pred_litellm/{model_name}/{dataset}.jsonl"
+
         prompt_format = dataset2prompt[dataset]
         max_gen = dataset2maxlen[dataset]
         data_all = [data_sample for data_sample in data]
@@ -202,12 +190,12 @@ if __name__ == '__main__':
         print(f"max_new_tokens: {max_new_tokens}")
         max_source_length = max(max_length - max_new_tokens, max_length-64)
         print(f"max_source_length: {max_source_length}")
-        sampling_params = SamplingParams(max_tokens=max_new_tokens, use_beam_search=False, temperature=0.0)
+        # sampling_params = SamplingParams(max_tokens=max_new_tokens, use_beam_search=False, temperature=0.0)
         tokenizer = load_tokenizer(model2path[model_name], model_name)
         for json_obj in tqdm(data):
             prompt = build_input(tokenizer, **json_obj)
-            output = model.generate(prompt, sampling_params)
-            pred = output[0].outputs[0].text
+            output = model.chat(prompt, max_new_tokens=max_new_tokens)
+            pred = output
             if pred == '':
                 print(output)
             pred = post_process(pred, model_name)

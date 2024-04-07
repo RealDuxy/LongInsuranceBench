@@ -18,8 +18,7 @@ import json
 
 
 _DESCRIPTION = """\
-LongBench is a comprehensive benchmark for multilingual and multi-task purposes, with the goal to fully measure and evaluate the ability of pre-trained language models to understand long text. This dataset consists of twenty different tasks, covering key long-text application scenarios such as multi-document QA, single-document QA, summarization, few-shot learning, synthetic tasks, and code completion.
-"""
+LongInsuranceBench 是一个针对保险长文本场景下的长文本任务基准, 旨在测试评估大型预训练模型理解生成长文本的能力。 数据集目前主要包括，产品回答拒绝、多产品问答、产品计数、问题召回产品、摘要召回产品、产品问答复述。"""
 
 _HOMEPAGE = "https://github.com/RealDuxy/LongInsuranceBench"
 
