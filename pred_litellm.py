@@ -194,7 +194,7 @@ if __name__ == '__main__':
         tokenizer = load_tokenizer(model2path[model_name], model_name)
         for json_obj in tqdm(data):
             prompt = build_input(tokenizer, **json_obj)
-            output = model.chat(prompt, max_new_tokens=max_new_tokens)
+            output = model.chat(prompt[0], max_new_tokens=max_new_tokens)
             pred = output
             if pred == '':
                 print(output)
