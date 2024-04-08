@@ -59,13 +59,16 @@ class LLM:
         excutor = ThreadPoolExecutor(max_workers=4)
 
         input_kwargs = [
-            {"query": prompts[i], "history": []} for i in range(len(prompts))
+            {"prompt": prompts[i], "history": []} for i in range(len(prompts))
         ]
+
         for kwarg in input_kwargs:
             kwarg.update(kwargs)
 
+        print(kwargs.keys())
         for i, result in enumerate(excutor.map(lambda x: self.chat(**x), input_kwargs)):
             results.append(result)
+        print(results)
         return results
 
 if __name__ == '__main__':
