@@ -65,18 +65,19 @@ class LLM:
         for kwarg in input_kwargs:
             kwarg.update(kwargs)
 
-        print(input_kwargs.keys())
+        print(input_kwargs[0].keys())
+        print(input_kwargs[0]["prompt"][:10])
         for i, result in enumerate(excutor.map(lambda x: self.chat(**x), input_kwargs)):
             results.append(result)
         print(results)
         return results
 
 if __name__ == '__main__':
-    model = LLM()
+    model = LLM(port=80801)
 
     prompts = ["prompt"] * 2
     history = ["history"] * 2
     kwargs = {"1":1, "2": 2}
-    print(model.para_chat(prompts, history, **kwargs))
+    print(model.parallel_chat(prompts, **kwargs))
 
 
