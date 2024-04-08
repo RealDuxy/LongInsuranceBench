@@ -208,7 +208,7 @@ if __name__ == '__main__':
 
         with open(out_path, "a", encoding="utf-8") as f:
             for json_obj_list in tqdm(data_subsets):
-                prompts = [build_input(tokenizer, **json_obj) for json_obj in json_obj_list]
+                prompts = [build_input(tokenizer, **json_obj)[0] for json_obj in json_obj_list]
                 # prompt = build_input(tokenizer, **json_obj)
                 outputs = model.parallel_chat(prompts, max_new_tokens=max_new_tokens)
                 for output, json_obj in zip(outputs, json_obj_list):
