@@ -46,6 +46,7 @@ class LLM:
             }
         }
 
+        return "this is for test"
         response = requests.post(url=self.url, headers=headers, data=json.dumps(input_data))
 
         if response.status_code != 200:
@@ -59,7 +60,7 @@ class LLM:
         excutor = ThreadPoolExecutor(max_workers=4)
 
         input_kwargs = [
-            {"prompt": prompts[i], "history": histories[i]} for i in range(len(prompts))
+            {"prompt": prompts[i]} for i in range(len(prompts))
         ]
         for kwarg in input_kwargs:
             kwarg.update(kwargs)

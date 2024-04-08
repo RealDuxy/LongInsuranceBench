@@ -15,7 +15,7 @@ from litellm import LLM
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default="", )
+    parser.add_argument('--model', type=str, default="chatglm3-6b", )
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     parser.add_argument('--s', help='model size in B')
     parser.add_argument('--debug', action='store_true', help="Debug mode")
@@ -186,7 +186,7 @@ if __name__ == '__main__':
 
         print(f"word_size: {world_size}")
 
-        data_split = 1
+        data_split = 4
         data_subsets = [data_all[i::data_split] for i in range(data_split)]
         max_new_tokens = max(min(dataset2maxlen[dataset], max_length), 64)
         print(f"max_new_tokens: {max_new_tokens}")
@@ -194,15 +194,26 @@ if __name__ == '__main__':
         print(f"max_source_length: {max_source_length}")
         # sampling_params = SamplingParams(max_tokens=max_new_tokens, use_beam_search=False, temperature=0.0)
         tokenizer = load_tokenizer(model2path[model_name], model_name)
-        for json_obj in tqdm(data):
-            prompt = build_input(tokenizer, **json_obj)
-            output = model.chat(prompt[0], max_new_tokens=max_new_tokens)
-            pred = output
-            if pred == '':
-                print(output)
-            pred = post_process(pred, model_name)
-            with open(out_path, "a", encoding="utf-8") as f:
-                json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"],
-                           "length": json_obj["length"]}, f, ensure_ascii=False)
-                f.write('\n')
+        # for json_obj in tqdm(data):
+        #     prompt = build_input(tokenizer, **json_obj)
+        #     output = model.chat(prompt[0], max_new_tokens=max_new_tokens)
+        #     pred = output
+        #     if pred == '':
+        #         print(output)
+        #     pred = post_process(pred, model_name)
+        #     with open(out_path, "a", encoding="utf-8") as f:
+        #         json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"],
+        #                    "length": json_obj["length"]}, f, ensure_ascii=False)
+        #         f.write('\n')
+
+        with open(out_path, "a", encoding="utf-8") as f:
+            for json_obj_list in tqdm(data_subsets):
+                prompts = [build_input(tokenizer, **json_obj) for json_obj in json_obj_list]
+                # prompt = build_input(tokenizer, **json_obj)
+                outputs = model.parallel_chat(prompts, max_new_tokens=max_new_tokens)
+                for output, json_obj in zip(outputs, json_obj_list):
+                    pred = post_process(output, model_name)
+                    json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"],
+                               "length": json_obj["length"]}, f, ensure_ascii=False)
+                    f.write('\n')
             # get_pred(0,1,data_all,max_length,max_gen,prompt_format,dataset,device,model_name,model2path,out_path)
