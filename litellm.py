@@ -14,7 +14,8 @@ import requests
 
 
 class LLM:
-    url: str = "http://localhost:8081/chat"
+    def __init__(self, port):
+        self.url = f"http://localhost:{port}/chat"
 
     def chat(self, prompt, history=[], **kwargs):
         record_id = kwargs.get("record_id", random.randint(0, 99999999))

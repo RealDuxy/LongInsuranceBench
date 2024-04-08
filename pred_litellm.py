@@ -24,6 +24,8 @@ def parse_args(args=None):
     parser.add_argument('--quantize', action='store_true', help="Debug mode")
     parser.add_argument('--dataset',type=str, required=False)
     parser.add_argument('--pred_dir', type=str, required=True)
+    parser.add_argument('--port', type=int, required=True)
+
 
     return parser.parse_args(args)
 
@@ -168,7 +170,7 @@ if __name__ == '__main__':
     if not os.path.exists(pred_dir):
         os.makedirs(pred_dir)
 
-    model = LLM()
+    model = LLM(port=int(args.port))
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
