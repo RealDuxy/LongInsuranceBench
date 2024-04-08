@@ -65,7 +65,7 @@ class LLM:
         for kwarg in input_kwargs:
             kwarg.update(kwargs)
 
-        print(kwargs.keys())
+        print(input_kwargs.keys())
         for i, result in enumerate(excutor.map(lambda x: self.chat(**x), input_kwargs)):
             results.append(result)
         print(results)
