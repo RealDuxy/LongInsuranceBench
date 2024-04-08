@@ -76,6 +76,8 @@ def scorer_e(dataset, predictions, answers, lengths, all_classes):
             scores["12k-16k"].append(score)
         scores["overall"].append(score)
     for key in scores.keys():
+        print(f"计算分数：")
+        print(f"{key}: {scores[key][:]}")
         scores[key] = round(100 * np.mean(scores[key]), 2)
     return scores
 
@@ -120,10 +122,9 @@ if __name__ == '__main__':
             dataset = filename.split('.')[0]
             with open(f"{path}{filename}", "r", encoding="utf-8") as f:
                 for line in f:
-                    try:
-                        data = json.loads(line)
-                    except JSONDecodeError:
-                        print(line)
+                    data = json.loads(line)
+                    # except JSONDecodeError:
+                    #     print(line)
                     predictions.append(data["pred"])
                     answers.append(data["answers"])
                     all_classes = data["all_classes"]
