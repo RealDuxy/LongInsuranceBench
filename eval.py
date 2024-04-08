@@ -53,7 +53,7 @@ dataset2metric = {
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default="longalign-6b-64k")
+    parser.add_argument('--model', type=str, default="chatglm3-6b")
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     return parser.parse_args(args)
 
@@ -65,6 +65,7 @@ def scorer_e(dataset, predictions, answers, lengths, all_classes):
         #     prediction = prediction.lstrip('\n').split('\n')[0]
         for ground_truth in ground_truths:
             score = max(score, dataset2metric[dataset](prediction, ground_truth, all_classes=all_classes))
+
         if length < 4000:
             scores["0-4k"].append(score)
         elif length < 8000:
@@ -98,7 +99,7 @@ if __name__ == '__main__':
                   # "qwen15_4b_chat",
                   # "qwen15_7b_chat",
                   # "qwen15_14b_chat",
-                  # "qwen15_14b_chat_int4"
+                  "qwen15_14b_chat_int4"
     ]:
         print("=="*20, f"评估模型 {model}", "=="*20)
         args.model = model

@@ -143,13 +143,13 @@ if __name__ == '__main__':
     dataset_list = ["deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa", "repeat_product"]
     if args.e:
-        if args.dataset and args.dataset in dataset_list:
+        if args.dataset:
             datasets = [x.strip() for x in args.dataset.split(",")]
         else:
             datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa"]
     else:
-        if args.dataset and args.dataset in dataset_list:
+        if args.dataset:
             datasets = [x.strip() for x in args.dataset.split(",")]
         else:
             datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",

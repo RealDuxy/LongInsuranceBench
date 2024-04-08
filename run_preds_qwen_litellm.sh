@@ -13,3 +13,7 @@ python pred_litellm.py --model qwen15_14b_chat_int4 --dataset product_retrieval_
 #python pred_litellm.py --model chatglm3-6b > chatglm3-6b_litellm.out 2>&1
 
 
+python pred_litellm.py --model chatglm3-6b --dataset repeat_product > chatglm3-6b_1.out 2>&1 &
+python pred_litellm.py --model chatglm3-6b --dataset deny_multi_product_qa > chatglm3-6b_2.out 2>&1 &
+python pred_litellm.py --model chatglm3-6b --dataset multi_product_qa,product_retrieval_question > chatglm3-6b_3.out 2>&1 &
+python pred_litellm.py --model chatglm3-6b --dataset product_count,product_retrieval_summary > chatglm3-6b_4.out 2>&1 &
