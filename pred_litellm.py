@@ -185,7 +185,7 @@ if __name__ == '__main__':
 
         print(f"word_size: {world_size}")
 
-        data_split = 4
+        data_split = 2
         data_subsets = [data_all[i::data_split] for i in range(data_split)]
         max_new_tokens = max(min(dataset2maxlen[dataset], max_length), 64)
         print(f"max_new_tokens: {max_new_tokens}")
