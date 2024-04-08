@@ -93,7 +93,7 @@ def scorer(dataset, predictions, answers, all_classes):
 if __name__ == '__main__':
     args = parse_args()
     for model in [
-                "chatglm3-6b",
+                # "chatglm3-6b",
                 #   "chatglm3-6b-32k",
                   # "longalign-6b-64k",
                   # "qwen15_4b_chat",

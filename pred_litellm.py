@@ -23,6 +23,7 @@ def parse_args(args=None):
     # parser.add_argument('--checkpoint', type=str, help="checkpoint_path")
     parser.add_argument('--quantize', action='store_true', help="Debug mode")
     parser.add_argument('--dataset',type=str, required=False)
+    parser.add_argument('--pred_dir', type=str, required=True)
 
     return parser.parse_args(args)
 
@@ -161,24 +162,21 @@ if __name__ == '__main__':
     dataset2prompt = json.load(open(f"{config_dir}/dataset2prompt.json", "r"))
     dataset2maxlen = json.load(open(f"{config_dir}/dataset2maxlen.json", "r"))
     # predict on each dataset
-    if not os.path.exists("pred_litellm"):
-        os.makedirs("pred_litellm")
+
+    pred_dir = args.pred_dir
+
+    if not os.path.exists(pred_dir):
+        os.makedirs(pred_dir)
 
     model = LLM()
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
         print(f"处理数据集：{dataset}")
-        if args.e:
-            data = load_dataset(data_script, f"{dataset}_e", split=test_split)
-            if not os.path.exists(f"pred_litellm_e/{model_name}"):
-                os.makedirs(f"pred_litellm_e/{model_name}")
-            out_path = f"pred_litellm_e/{model_name}/{dataset}.jsonl"
-        else:
-            data = load_dataset(data_script, dataset, split=test_split)
-            if not os.path.exists(f"pred_litellm/{model_name}"):
-                os.makedirs(f"pred_litellm/{model_name}")
-            out_path = f"pred_litellm/{model_name}/{dataset}.jsonl"
+        data = load_dataset(data_script, dataset, split=test_split)
+        if not os.path.exists(f"{pred_dir}/{model_name}"):
+            os.makedirs(f"{pred_dir}/{model_name}")
+        out_path = f"{pred_dir}/{model_name}/{dataset}.jsonl"
 
         prompt_format = dataset2prompt[dataset]
         max_gen = dataset2maxlen[dataset]
