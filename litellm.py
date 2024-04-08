@@ -65,11 +65,11 @@ class LLM:
         for kwarg in input_kwargs:
             kwarg.update(kwargs)
 
-        print(input_kwargs[0].keys())
-        print(input_kwargs[0]["prompt"][:10])
+        # print(input_kwargs[0].keys())
+        # print(input_kwargs[0]["prompt"][:10])
         for i, result in enumerate(excutor.map(lambda x: self.chat(**x), input_kwargs)):
             results.append(result)
-        print(results)
+        # print(results)
         return results
 
 if __name__ == '__main__':
