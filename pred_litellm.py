@@ -26,7 +26,6 @@ def parse_args(args=None):
     parser.add_argument('--pred_dir', type=str, required=True)
     parser.add_argument('--port', type=int, required=True)
 
-
     return parser.parse_args(args)
 
 def load_tokenizer(path, model_name):

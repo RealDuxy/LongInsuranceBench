@@ -55,12 +55,12 @@ class LLM:
             resp = response.json()
             return resp["response"]
 
-    def parallel_chat(self, prompts, histories, **kwargs):
+    def parallel_chat(self, prompts, **kwargs):
         results = []
         excutor = ThreadPoolExecutor(max_workers=4)
 
         input_kwargs = [
-            {"prompt": prompts[i]} for i in range(len(prompts))
+            {"prompt": prompts[i], "history": []} for i in range(len(prompts))
         ]
         for kwarg in input_kwargs:
             kwarg.update(kwargs)
