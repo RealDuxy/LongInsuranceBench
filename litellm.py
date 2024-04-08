@@ -46,7 +46,6 @@ class LLM:
             }
         }
 
-        return "this is for test"
         response = requests.post(url=self.url, headers=headers, data=json.dumps(input_data))
 
         if response.status_code != 200:
