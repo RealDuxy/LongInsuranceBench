@@ -59,7 +59,7 @@ class LLM:
         excutor = ThreadPoolExecutor(max_workers=4)
 
         input_kwargs = [
-            {"prompt": prompts[i], "history": []} for i in range(len(prompts))
+            {"query": prompts[i], "history": []} for i in range(len(prompts))
         ]
         for kwarg in input_kwargs:
             kwarg.update(kwargs)
