@@ -15,7 +15,7 @@ from litellm import LLM
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default="qwen15_14b_chat_int4", )
+    parser.add_argument('--model', type=str, default="", )
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     parser.add_argument('--s', help='model size in B')
     parser.add_argument('--debug', action='store_true', help="Debug mode")
@@ -144,13 +144,13 @@ if __name__ == '__main__':
                     "multi_product_qa", "repeat_product"]
     if args.e:
         if args.dataset and args.dataset in dataset_list:
-            datasets = [args.dataset]
+            datasets = [x.strip() for x in args.split(",")]
         else:
             datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa"]
     else:
         if args.dataset and args.dataset in dataset_list:
-            datasets = [args.dataset]
+            datasets = [x.strip() for x in args.split(",")]
         else:
             datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa"]

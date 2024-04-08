@@ -1,6 +1,8 @@
 import os
 import json
 import argparse
+from json import JSONDecodeError
+
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
@@ -90,20 +92,23 @@ def scorer(dataset, predictions, answers, all_classes):
 if __name__ == '__main__':
     args = parse_args()
     for model in [
-                # "chatglm3-6b",
-                  "chatglm3-6b-32k",
-                  "longalign-6b-64k",
+                "chatglm3-6b",
+                #   "chatglm3-6b-32k",
+                  # "longalign-6b-64k",
                   # "qwen15_4b_chat",
                   # "qwen15_7b_chat",
                   # "qwen15_14b_chat",
-                  "qwen15_14b_chat_int4"]:
+                  # "qwen15_14b_chat_int4"
+    ]:
         print("=="*20, f"评估模型 {model}", "=="*20)
         args.model = model
         scores = dict()
-        if args.e:
-            path = f"pred_e/{args.model}/"
-        else:
-            path = f"pred/{args.model}/"
+        pred_dir = "pred_litellm"
+
+        path = os.path.join(pred_dir, f"{args.model}/")
+
+
+
         all_files = os.listdir(path)
         print("Evaluating on:", all_files)
         for filename in all_files:
@@ -114,7 +119,10 @@ if __name__ == '__main__':
             dataset = filename.split('.')[0]
             with open(f"{path}{filename}", "r", encoding="utf-8") as f:
                 for line in f:
-                    data = json.loads(line)
+                    try:
+                        data = json.loads(line)
+                    except JSONDecodeError:
+                        print(line)
                     predictions.append(data["pred"])
                     answers.append(data["answers"])
                     all_classes = data["all_classes"]
@@ -126,10 +134,7 @@ if __name__ == '__main__':
             #     score = scorer(dataset, predictions, answers, all_classes)
             score = scorer_e(dataset, predictions, answers, lengths, all_classes)
             scores[dataset] = score
-        if args.e:
-            out_path = f"pred_e/{args.model}/result.json"
-        else:
-            out_path = f"pred/{args.model}/result.json"
+        out_path = os.path.join(pred_dir, f"{args.model}/") + "result.json"
         with open(out_path, "w") as f:
             json.dump(scores, f, ensure_ascii=False, indent=4)
 

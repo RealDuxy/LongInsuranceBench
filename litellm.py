@@ -8,6 +8,7 @@
 """
 import json
 import random
+from concurrent.futures.thread import ThreadPoolExecutor
 
 import requests
 
@@ -52,35 +53,26 @@ class LLM:
             resp = response.json()
             return resp["response"]
 
-    def para_chat(self, prompt, history, **kwargs):
-        record_id = kwargs.get("record_id", random.randint(0, 99999999))
-        headers = {
-            "Content-Type": "application/json",
-            "cache_control": "no-cache"
-        }
-        temperature = kwargs.get("temperature", 0.01)
-        adapter_name = kwargs.get("adapter_name", "")
-        skip_lora = (adapter_name == "original" or adapter_name == "")
-        seed = kwargs.get("seed", 42)
-        prefix_token_ids = kwargs.get("prefix_token_ids", [])
+    def parallel_chat(self, prompts, histories, **kwargs):
+        results = []
+        excutor = ThreadPoolExecutor(max_workers=4)
 
-        input_data = {
-            "prompt": prompt,
-            "history": history,
-            "gen_kwarg": {
-                "seed": seed,
-                "prefix_token_ids": prefix_token_ids,
-                "temperature": temperature,
-                "skip_lora": skip_lora,
-                "adapter_name": adapter_name,
-                "return_raw": True
-            }
-        }
+        input_kwargs = [
+            {"prompt": prompts[i], "history": histories[i]} for i in range(len(prompts))
+        ]
+        for kwarg in input_kwargs:
+            kwarg.update(kwargs)
 
-        response = requests.post(url=self.url, headers=headers, data=json.dumps(input_data))
+        for i, result in enumerate(excutor.map(lambda x: self.chat(**x), input_kwargs)):
+            results.append(result)
+        return results
 
-        if response.status_code != 200:
-            return "error"
-        else:
-            resp = response.json()
-            return resp["response"]
+if __name__ == '__main__':
+    model = LLM()
+
+    prompts = ["prompt"] * 2
+    history = ["history"] * 2
+    kwargs = {"1":1, "2": 2}
+    print(model.para_chat(prompts, history, **kwargs))
+
+
