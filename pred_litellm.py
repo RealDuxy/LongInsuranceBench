@@ -144,16 +144,18 @@ if __name__ == '__main__':
                     "multi_product_qa", "repeat_product"]
     if args.e:
         if args.dataset and args.dataset in dataset_list:
-            datasets = [x.strip() for x in args.split(",")]
+            datasets = [x.strip() for x in args.dataset.split(",")]
         else:
             datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa"]
     else:
         if args.dataset and args.dataset in dataset_list:
-            datasets = [x.strip() for x in args.split(",")]
+            datasets = [x.strip() for x in args.dataset.split(",")]
         else:
             datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
                     "multi_product_qa"]
+
+    print(datasets)
         # datasets = ["repeat_product"]
     # we design specific prompt format and max generation length for each task, feel free to modify them to optimize model output
     dataset2prompt = json.load(open(f"{config_dir}/dataset2prompt.json", "r"))
