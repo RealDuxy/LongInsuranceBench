@@ -8,5 +8,5 @@
     "qwen15_14b_chat": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-14B-Chat",
     "qwen15_7b_chat_int8": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-7B-Chat-GPTQ-Int8",
     "qwen15_14b_chat_int4": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-14B-Chat-GPTQ-Int4",
-    "qwen15_72b_chat_int4": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-72B-Chat-GPTQ-Int4"
+    "qwen15_72b_chat_int4": "/mnt/e/UbuntuFiles/models_saved/qwen15_72b_chat_int4_gptq"
 }
