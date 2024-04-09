@@ -46,7 +46,7 @@ class LLM:
             }
         }
 
-        response = requests.post(url=self.url, headers=headers, data=json.dumps(input_data))
+        response = requests.post(url=self.url, headers=headers, data=json.dumps(input_data), timeout=600)
 
         if response.status_code != 200:
             return ""

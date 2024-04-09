@@ -17,7 +17,7 @@ from metrics import (
     retrieval_zh_score,
     count_score,
     # code_sim_score,
-    retrieval_product_zh_score, count_product_score,
+    retrieval_product_zh_score, count_product_score, translation_edit_distance,
 )
 
 dataset2metric = {
@@ -48,7 +48,7 @@ dataset2metric = {
     "product_retrieval_question": retrieval_product_zh_score,
     "deny_multi_product_qa": rouge_zh_score,
     "multi_product_qa": rouge_zh_score,
-    "repeat_product": rouge_zh_score
+    "repeat_product": translation_edit_distance
 }
 
 def parse_args(args=None):
@@ -76,8 +76,8 @@ def scorer_e(dataset, predictions, answers, lengths, all_classes):
             scores["12k-16k"].append(score)
         scores["overall"].append(score)
     for key in scores.keys():
-        print(f"计算分数：")
-        print(f"{key}: {scores[key][:]}")
+        # print(f"计算分数：")
+        # print(f"{key}: {scores[key][:]}")
         scores[key] = round(100 * np.mean(scores[key]), 2)
     return scores
 
@@ -96,8 +96,8 @@ if __name__ == '__main__':
     args = parse_args()
     for model in [
                 "chatglm3-6b",
-                #   "chatglm3-6b-32k",
-                  # "longalign-6b-64k",
+                  "chatglm3-6b-32k",
+                  "longalign-6b-64k",
                   # "qwen15_4b_chat",
                   # "qwen15_7b_chat",
                   # "qwen15_14b_chat",
@@ -106,7 +106,7 @@ if __name__ == '__main__':
         print("=="*20, f"评估模型 {model}", "=="*20)
         args.model = model
         scores = dict()
-        pred_dir = "pred_litellm"
+        pred_dir = "pred"
 
         path = os.path.join(pred_dir, f"{args.model}/")
 

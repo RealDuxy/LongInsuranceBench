@@ -92,7 +92,7 @@ def scorer(dataset, predictions, answers, all_classes):
 def aggregate_scorer():
     pred_dir = f"pred_litellm/"
     model_list = [
-        # "chatglm3-6b",
+        "chatglm3-6b",
         # "chatglm3-6b-32k",
         # "longalign-6b-64k",
         # "qwen15_4b_chat",
