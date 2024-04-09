@@ -8,5 +8,6 @@
     "qwen15_14b_chat": 16000,
     "qwen15_7b_chat_int8": 16000,
     "qwen15_14b_chat_int4": 16000,
+    "qwen15_32b_chat_int4": 16000,
     "qwen15_72b_chat_int4": 8000
 }

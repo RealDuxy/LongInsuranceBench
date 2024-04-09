@@ -90,15 +90,15 @@ def scorer(dataset, predictions, answers, all_classes):
     return round(100 * total_score / len(predictions), 2)
 
 def aggregate_scorer():
-    pred_dir = f"pred_litellm/"
+    pred_dir = f"pred/"
     model_list = [
-        "chatglm3-6b",
-        # "chatglm3-6b-32k",
-        # "longalign-6b-64k",
+        # "chatglm3-6b",
+        "chatglm3-6b-32k",
+        "longalign-6b-64k",
         # "qwen15_4b_chat",
         # "qwen15_7b_chat",
         # "qwen15_14b_chat",
-        "qwen15_14b_chat_int4"
+        # "qwen15_14b_chat_int4"
     ]
     # model_list = os.listdir(pred_dir)
 
@@ -116,7 +116,7 @@ def aggregate_scorer():
             for range, score in info.items():
                 final_results_display[f"{task}_{range}"].append(score)
 
-    pd.DataFrame(final_results_display).to_excel("final_result_litellm.xlsx")
+    pd.DataFrame(final_results_display).to_excel("final_result.xlsx")
 
 
 

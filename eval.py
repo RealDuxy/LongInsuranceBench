@@ -95,13 +95,13 @@ def scorer(dataset, predictions, answers, all_classes):
 if __name__ == '__main__':
     args = parse_args()
     for model in [
-                "chatglm3-6b",
+                # "chatglm3-6b",
                   "chatglm3-6b-32k",
                   "longalign-6b-64k",
                   # "qwen15_4b_chat",
                   # "qwen15_7b_chat",
                   # "qwen15_14b_chat",
-                  "qwen15_14b_chat_int4"
+                  # "qwen15_14b_chat_int4"
     ]:
         print("=="*20, f"评估模型 {model}", "=="*20)
         args.model = model
