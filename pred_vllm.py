@@ -237,7 +237,7 @@ if __name__ == '__main__':
             #     print(output)
             pred = post_process(pred, model_name)
 
-            if args.debug:
+            if args.debug and args.max_samples:
                 print(pred)
                 continue
 
