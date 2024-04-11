@@ -236,6 +236,11 @@ if __name__ == '__main__':
             # if pred == '':
             #     print(output)
             pred = post_process(pred, model_name)
+
+            if args.debug:
+                print(pred)
+                continue
+
             with open(out_path, "a", encoding="utf-8") as f:
                 json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"],
                            "length": json_obj["length"]}, f, ensure_ascii=False)
