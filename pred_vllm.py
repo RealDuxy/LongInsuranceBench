@@ -118,7 +118,8 @@ if __name__ == '__main__':
     seed_everything(42)
     args = parse_args()
     print(args)
-    world_size = torch.cuda.device_count()
+
+    world_size = torch.cuda.device_count() if not args.debug else 1
     mp.set_start_method('spawn', force=True)
     config_dir = "config_tsr"
     if args.max_samples:
