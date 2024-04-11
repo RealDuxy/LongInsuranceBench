@@ -184,6 +184,24 @@ if __name__ == '__main__':
                     max_model_len=max_length,
                     dtype="float16")
 
+    print("==="*10, "test model", "==="*10)
+    prompt = "你好，请详细的介绍一下你自己吧。"
+    output = model.generate(prompt)
+    pred = output[0].outputs[0].text
+    print(f"human: {prompt}")
+    print(f"model: {pred}")
+
+    prompt = ("'产品代码': '1730', '产品名称': '平安福满分（2023）两全保险', "
+              "'发布时间': '2023-07-27', "
+              "'产品特色': '\\uf06c满期给付生存金，为未来储备一笔资金\n保险期满时生存可领取生存金，满足家庭生活所需\n"
+              "\\uf06c身故保障延续爱\n保险期内不幸身故，身故保险金守护家人生活\n', "
+              "'保险责任': '\\uf06c满期生存保险金\n若未附加提前给付型重大疾病保险，被保险人于保险期满时仍生存，我们按照约定金额\n给付满期生存保险金，合同终止。")
+    prompt = f"```{prompt}```。\n请生成一段该产品的介绍"
+    output = model.generate(prompt)
+    pred = output[0].outputs[0].text
+    print(f"human: {prompt}")
+    print(f"model: {pred}")
+
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
         print(f"处理数据集：{dataset}")
