@@ -118,15 +118,9 @@ if __name__ == '__main__':
     seed_everything(42)
     args = parse_args()
     print(args)
-
     world_size = torch.cuda.device_count()
     mp.set_start_method('spawn', force=True)
-
-    if args.debug:
-        config_dir = "config"
-    else:
-        config_dir = "config_tsr"
-
+    config_dir = "config_tsr"
     if args.max_samples:
         test_split = f"test[:{args.max_samples}]"
     else:
@@ -145,15 +139,27 @@ if __name__ == '__main__':
         if args.dataset and args.dataset in dataset_list:
             datasets = [args.dataset]
         else:
-            datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
-                    "multi_product_qa"]
+            datasets = [
+                "product_retrieval_question",
+                "product_retrieval_summary",
+                "multi_product_qa",
+                "deny_multi_product_qa",
+                "product_count",
+                "repeat_product",
+            ]
     else:
         if args.dataset and args.dataset in dataset_list:
             datasets = [args.dataset]
         else:
-            datasets = ["repeat_product", "deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
-                    "multi_product_qa"]
-        # datasets = ["repeat_product"]
+            datasets = [
+                "product_retrieval_question",
+                "product_retrieval_summary",
+                "multi_product_qa",
+                "deny_multi_product_qa",
+                "product_count",
+                "repeat_product",
+            ]
+
     # we design specific prompt format and max generation length for each task, feel free to modify them to optimize model output
     dataset2prompt = json.load(open(f"{config_dir}/dataset2prompt.json", "r"))
     dataset2maxlen = json.load(open(f"{config_dir}/dataset2maxlen.json", "r"))
@@ -175,29 +181,29 @@ if __name__ == '__main__':
                     tensor_parallel_size=world_size,
                     trust_remote_code=True,
                     max_model_len=max_length,
-                    dtype = "float16")
+                    dtype="float16")
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
     for dataset in datasets:
         print(f"处理数据集：{dataset}")
-        if args.e:
-            data = load_dataset(data_script, f"{dataset}_e", split=test_split)
-            if not os.path.exists(f"pred_e/{model_name}"):
-                os.makedirs(f"pred_e/{model_name}")
-            out_path = f"pred_e/{model_name}/{dataset}.jsonl"
-        else:
-            data = load_dataset(data_script, dataset, split=test_split)
-            if not os.path.exists(f"pred/{model_name}"):
-                os.makedirs(f"pred/{model_name}")
-            out_path = f"pred/{model_name}/{dataset}.jsonl"
+        # if args.e:
+        #     data = load_dataset(data_script, f"{dataset}_e", split=test_split)
+        #     if not os.path.exists(f"pred_e/{model_name}"):
+        #         os.makedirs(f"pred_e/{model_name}")
+        #     out_path = f"pred_e/{model_name}/{dataset}.jsonl"
+        # else:
+        data = load_dataset(data_script, dataset, split=test_split)
+        if not os.path.exists(f"pred/{model_name}"):
+            os.makedirs(f"pred/{model_name}")
+        out_path = f"pred/{model_name}/{dataset}.jsonl"
         prompt_format = dataset2prompt[dataset]
         max_gen = dataset2maxlen[dataset]
         data_all = [data_sample for data_sample in data]
 
         print(f"word_size: {world_size}")
 
-        data_split = 1
-        data_subsets = [data_all[i::data_split] for i in range(data_split)]
+        data_subsets = [data_all[i: i + world_size] for i in range(0, len(data_all), world_size)]
+        # data_subsets = [data_all[i::data_split] for i in range(data_split)]
         max_new_tokens = max(min(dataset2maxlen[dataset], max_length), 64)
         print(f"max_new_tokens: {max_new_tokens}")
         max_source_length = max(max_length - max_new_tokens, max_length-64)
@@ -208,8 +214,8 @@ if __name__ == '__main__':
             prompt = build_input(tokenizer, **json_obj)
             output = model.generate(prompt, sampling_params)
             pred = output[0].outputs[0].text
-            if pred == '':
-                print(output)
+            # if pred == '':
+            #     print(output)
             pred = post_process(pred, model_name)
             with open(out_path, "a", encoding="utf-8") as f:
                 json.dump({"pred": pred, "answers": json_obj["answers"], "all_classes": json_obj["all_classes"],

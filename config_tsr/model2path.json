@@ -2,12 +2,14 @@
     "chatglm3-6b": "/mnt/e/UbuntuFiles/models_saved/chatglm3",
     "chatglm3-6b-32k": "/mnt/e/UbuntuFiles/models_saved/chatglm3-6b-32k",
     "longalign-6b-64k": "/mnt/e/UbuntuFiles/models_saved/LongAlign-6B-64k",
-    "qwen15_moe_chat": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-MoE-A2.7B-Chat",
+    "qwen15_moe-A2-7B_chat": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-MoE-A2.7B-Chat",
+    "qwen15_0-5b_chat": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-0.5B-Chat",
+    "qwen15_1-8b_chat": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-1.8B-Chat",
     "qwen15_4b_chat": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-4B-Chat",
     "qwen15_7b_chat": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-7B-Chat",
     "qwen15_14b_chat": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-14B-Chat",
     "qwen15_7b_chat_int8": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-7B-Chat-GPTQ-Int8",
-    "qwen15_14b_chat_int4": "/mnt/e/UbuntuFiles/models_saved/Qwen1.5-14B-Chat-GPTQ-Int4",
+    "qwen15_14b_chat_int4": "/mnt/e/UbuntuFiles/models_saved/qwen1.5-14B-Chat-GPTQ-Int4",
     "qwen15_32b_chat_int4": "/mnt/e/UbuntuFiles/models_saved/qwen15_32b_chat_int4_gptq",
     "qwen15_72b_chat_int4": "/mnt/e/UbuntuFiles/models_saved/qwen15_72b_chat_int4_gptq"
 }

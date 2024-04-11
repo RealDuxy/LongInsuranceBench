@@ -15,6 +15,11 @@ nohup python pred_litellm.py --model qwen15_14b_chat_int4 --port 8081 --pred_dir
 nohup python pred_litellm.py --model chatglm3-6b --port 8082 --pred_dir pred_litellm > chatglm3-6b_litellm.out 2>&1
 
 nohup python pred_litellm.py --model qwen15_32b_chat_int4 --port 8081 --pred_dir pred_litellm > qwen15_32b_chat_int4_litellm.out 2>&1
+"deny_multi_product_qa", "product_retrieval_question", "product_retrieval_summary", "product_count",
+                    "multi_product_qa"
+
+nohup python pred_litellm.py --dataset deny_multi_product_qa,product_retrieval_question,product_retrieval_summary,product_count,multi_product_qa --model qwen15_32b_chat_int4 --port 8081 --pred_dir pred_litellm > qwen15_32b_chat_int4_litellm.out 2>&1
+
 
 nohup python pred_litellm.py --model qwen15_72b_chat_int4 --port 8081 --pred_dir pred_litellm > qwen15_72b_chat_int4_litellm.out 2>&1
 

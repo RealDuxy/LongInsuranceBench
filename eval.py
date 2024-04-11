@@ -57,14 +57,18 @@ def parse_args(args=None):
     parser.add_argument('--e', action='store_true', help="Evaluate on LongBench-E")
     return parser.parse_args(args)
 
-def scorer_e(dataset, predictions, answers, lengths, all_classes):
+def scorer_e(dataset, predictions, answers, lengths, all_classes, label_scores):
     scores = {"0-4k": [], "4-8k": [], "8k-12k": [], "12k-16k": [], "overall": []}
-    for (prediction, ground_truths, length) in tqdm(zip(predictions, answers, lengths)):
+    label_scores = [None]*len(predictions) if not label_scores else label_scores
+    for (prediction, ground_truths, length, label_score) in tqdm(zip(predictions, answers, lengths, label_scores)):
         score = 0.
         # if dataset in ["trec", "triviaqa", "samsum", "lsht"]:
         #     prediction = prediction.lstrip('\n').split('\n')[0]
-        for ground_truth in ground_truths:
-            score = max(score, dataset2metric[dataset](prediction, ground_truth, all_classes=all_classes))
+        if label_score:
+            score = label_score
+        else:
+            for ground_truth in ground_truths:
+                score = max(score, dataset2metric[dataset](prediction, ground_truth, all_classes=all_classes))
 
         if length < 4000:
             scores["0-4k"].append(score)
@@ -92,16 +96,40 @@ def scorer(dataset, predictions, answers, all_classes):
         total_score += score
     return round(100 * total_score / len(predictions), 2)
 
+def pred2excel(data_file):
+    lines = []
+    with open(data_file, "r", encoding="utf-8") as f:
+        for line in f.readlines():
+            line = json.loads(line)
+            line.update({"label_score": 0})
+            lines.append(line)
+    pd.DataFrame(lines).to_excel(data_file.replace(".jsonl", ".xlsx"))
+
+def excel2pred(data_file):
+    lines = pd.read_excel(data_file, index_col=None).to_dict("records")
+    with open(data_file.replace(".xlsx", ".jsonl"), "a", encoding="utf-8") as f:
+        for line in lines:
+            json.dump(line, f, ensure_ascii=False)
+            f.write("\n")
+
 if __name__ == '__main__':
+    pred_dir = "pred/longalign-6b-64k"
+    # pred_file = os.path.join(pred_dir, "deny_multi_product_qa.jsonl")
+    # pred2excel(pred_file)
+
+    excel_file = os.path.join(pred_dir,"deny_multi_product_qa.xlsx")
+    excel2pred(excel_file)
+
     args = parse_args()
     for model in [
                 # "chatglm3-6b",
-                  "chatglm3-6b-32k",
+                #   "chatglm3-6b-32k",
                   "longalign-6b-64k",
                   # "qwen15_4b_chat",
                   # "qwen15_7b_chat",
                   # "qwen15_14b_chat",
-                  # "qwen15_14b_chat_int4"
+                  # "qwen15_14b_chat_int4",
+                  # "qwen15_32b_chat_int4"
     ]:
         print("=="*20, f"评估模型 {model}", "=="*20)
         args.model = model
@@ -110,8 +138,6 @@ if __name__ == '__main__':
 
         path = os.path.join(pred_dir, f"{args.model}/")
 
-
-
         all_files = os.listdir(path)
         print("Evaluating on:", all_files)
         for filename in all_files:
@@ -119,6 +145,7 @@ if __name__ == '__main__':
             if not filename.endswith("jsonl"):
                 continue
             predictions, answers, lengths = [], [], []
+            label_scores = []
             dataset = filename.split('.')[0]
             with open(f"{path}{filename}", "r", encoding="utf-8") as f:
                 for line in f:
@@ -130,11 +157,13 @@ if __name__ == '__main__':
                     all_classes = data["all_classes"]
                     if "length" in data:
                         lengths.append(data["length"])
+                    if "label_score" in data:
+                        label_scores.append(data["label_score"])
             # if args.e:
             #     score = scorer_e(dataset, predictions, answers, lengths, all_classes)
             # else:
             #     score = scorer(dataset, predictions, answers, all_classes)
-            score = scorer_e(dataset, predictions, answers, lengths, all_classes)
+            score = scorer_e(dataset, predictions, answers, lengths, all_classes,label_scores)
             scores[dataset] = score
         out_path = os.path.join(pred_dir, f"{args.model}/") + "result.json"
         with open(out_path, "w") as f:

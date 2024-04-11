@@ -98,7 +98,8 @@ def aggregate_scorer():
         # "qwen15_4b_chat",
         # "qwen15_7b_chat",
         # "qwen15_14b_chat",
-        # "qwen15_14b_chat_int4"
+        # "qwen15_14b_chat_int4",
+        # "qwen15_32b_chat_int4",
     ]
     # model_list = os.listdir(pred_dir)
 

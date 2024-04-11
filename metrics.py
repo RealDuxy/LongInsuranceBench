@@ -129,6 +129,8 @@ def rouge_score(prediction, ground_truth, **kwargs):
     return scores["rouge-l"]["f"]
 
 def rouge_zh_score(prediction, ground_truth, **kwargs):
+    if isinstance(prediction, float):
+        return 0
     prediction = prediction.replace("\"", "'").replace("\n", '').replace(" ", '')
     ground_truth = ground_truth.replace("\"", "'").replace("\n", '').replace(" ", '')
     prediction = " ".join(list(jieba.cut(prediction, cut_all=False)))
@@ -137,6 +139,8 @@ def rouge_zh_score(prediction, ground_truth, **kwargs):
     return score
 
 def translation_edit_distance(prediction, ground_truth, **kwargs):
+    if isinstance(prediction, float):
+        return 0
     prediction = prediction.replace("\"", "'").replace("\n", '').replace(" ", '')
     ground_truth = ground_truth.replace("\"", "'").replace("\n", '').replace(" ", '')
     # prediction = " ".join(list(jieba.cut(prediction, cut_all=False)))
