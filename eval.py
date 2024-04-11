@@ -124,7 +124,10 @@ if __name__ == '__main__':
     for model in [
                 # "chatglm3-6b",
                 #   "chatglm3-6b-32k",
-                  "longalign-6b-64k",
+                #   "longalign-6b-64k",
+
+                  "qwen15_0-5b_chat",
+                  # "qwen15_1-8b_chat",
                   # "qwen15_4b_chat",
                   # "qwen15_7b_chat",
                   # "qwen15_14b_chat",
