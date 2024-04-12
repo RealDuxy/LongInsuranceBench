@@ -113,12 +113,12 @@ def excel2pred(data_file):
             f.write("\n")
 
 if __name__ == '__main__':
-    pred_dir = "pred/longalign-6b-64k"
+    # pred_dir = "pred/longalign-6b-64k"
     # pred_file = os.path.join(pred_dir, "deny_multi_product_qa.jsonl")
     # pred2excel(pred_file)
 
-    excel_file = os.path.join(pred_dir,"deny_multi_product_qa.xlsx")
-    excel2pred(excel_file)
+    # excel_file = os.path.join(pred_dir,"deny_multi_product_qa.xlsx")
+    # excel2pred(excel_file)
 
     args = parse_args()
     for model in [
@@ -127,8 +127,8 @@ if __name__ == '__main__':
                 #   "longalign-6b-64k",
 
                   "qwen15_0-5b_chat",
-                  # "qwen15_1-8b_chat",
-                  # "qwen15_4b_chat",
+                  "qwen15_1-8b_chat",
+                  "qwen15_4b_chat",
                   # "qwen15_7b_chat",
                   # "qwen15_14b_chat",
                   # "qwen15_14b_chat_int4",

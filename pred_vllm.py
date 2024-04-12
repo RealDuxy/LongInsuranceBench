@@ -26,7 +26,10 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 def load_tokenizer(path, model_name):
-    tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
+    if "qwen" not in path:
+        tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(path)
     return tokenizer
 
 
@@ -171,6 +174,7 @@ if __name__ == '__main__':
         os.makedirs("pred_e")
     # print(args.checkpoint)
 
+    print(f"加载模型{model2path[model_name]}......")
     if args.quantize:
         model = LLM(model=model2path[model_name],
                     trust_remote_code=True,
@@ -189,8 +193,8 @@ if __name__ == '__main__':
     output = model.generate(prompt)
     pred = output[0].outputs[0].text
     print(f"human: {prompt}")
-    print(f"model: {pred}")
-
+    print(f"model: {pred}\n")
+    print("===" * 10, "test model", "===" * 10)
     prompt = ("'产品代码': '1730', '产品名称': '平安福满分（2023）两全保险', "
               "'发布时间': '2023-07-27', "
               "'产品特色': '\\uf06c满期给付生存金，为未来储备一笔资金\n保险期满时生存可领取生存金，满足家庭生活所需\n"
@@ -199,7 +203,7 @@ if __name__ == '__main__':
     prompt = f"```{prompt}```。\n请生成一段该产品的介绍"
     output = model.generate(prompt)
     pred = output[0].outputs[0].text
-    print(f"human: {prompt}")
+    print(f"\nhuman: {prompt}")
     print(f"model: {pred}")
 
     data_script = "LongInsuranceBench/LongInsuranceBench.py"
